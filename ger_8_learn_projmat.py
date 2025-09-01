@@ -41,7 +41,7 @@ class ProjmatLearn(object):
         self.topn = topn
 
         if clf is None:
-            self.clf = MulticlassSVM(C=1, tol=0.01, max_iter=100, random_state=0, verbose=0)
+            self.clf = MulticlassSVM(C=1, tol=0.01, max_iter=1000, random_state=0, verbose=0)
         else:
             self.clf = clf
 
@@ -258,7 +258,7 @@ class ProjmatLearn(object):
             trn_raw_data_filtered = trn_raw_data
             trnL_filtered = trnL
 
-        lclf = MulticlassSVM(C=C, tol=0.01, max_iter=100, random_state=0, verbose=0)
+        lclf = MulticlassSVM(C=C, tol=0.01, max_iter=1000, random_state=0, verbose=0)
         #svm = LinearSVC(C=1.0, penalty='l1',loss='squared_hinge', dual=False, tol=1e-7)
         for t in range(1, iterations + 1):
             print('{} - re-generating projected training data'.format(time.strftime("%H:%M:%S", time.localtime())))
@@ -305,7 +305,7 @@ class ProjmatLearn(object):
 
     def learn_with_all_samples(self, projmat, samples, labels, model_path, projmat_path, c_):
         self.data.projmat = projmat
-        lclf = MulticlassSVM(C=c_, tol=0.01, max_iter=100, random_state=0, verbose=0)
+        lclf = MulticlassSVM(C=c_, tol=0.01, max_iter=1000, random_state=0, verbose=0)
         #lclf = LinearSVC(C=1.0, penalty='l1',loss='squared_hinge', dual=False, tol=1e-7)
         trnMArr = self.project_samples(samples, self.data)
         print('Training SVM with full training set for projmat {}'.format(projmat_path))

@@ -1,0 +1,34 @@
+--- Running Stage 2 Training on data/pcc_retest ---
+Namespace(basepath='data/pcc_retest', matrix_type='identity', num_matrix=0, only_prepare=False, relation_map='data/pcc_retest/pcc_retest_rel_mapping.json', run_stage1=False, run_stage2=True, skip_prepare=False, skip_syntax=False)
+--- Running Stage 2: Final Training ---
+====================== conll 2 merge =================
+====================== conll 2 merge =================
+====================== conll 2 merge =================
+Dis files prepared.
+Dis files prepared.
+Dis files prepared.
+Namespace(basepath='data/pcc_retest', quick=False)
+================== Build Vocabs =====================
+word_bc for training
+word_bc for dev
+word_bc for test
+word_bc.txt created
+tab clustering -> words_bc_out.txt
+dpvocab for training
+dpvocab for dev
+dpvocab for test
+dpvocab saved in data/pcc_retest/word-dict.pickle.gz
+bcvocab saved in data/pcc_retest/bcvocab.pickle.gz
+Vocab saved in data/pcc_retest/vocab.pickle.gz
+====================== segmenter training =================
+====================== parser training =================
+bcvocab length: 8850
+vocab length: 10000
+dpvocab length: 8850
+Finish initializing ParsingModel
+Features (dpvocab size): 8850
+Identity matrix created with shape: (8850, 8850)
+data/pcc_retest/model/identity.projmat.gz matrix is created and copied to data/pcc_retest/model/projmat.pickle.gz
+['additive', 'attribution', 'background', 'causal', 'comment', 'condition', 'contrastive', 'elab', 'eval', 'menablement', 'sameunit', 'solutionhood', 'span', 'summary']
+/usr/local/lib/python2.7/dist-packages/sklearn/svm/base.py:931: ConvergenceWarning: Liblinear failed to converge, increase the number of iterations.
+  "the number of iterations.", ConvergenceWarning)

@@ -16,37 +16,61 @@
 # 3. Run this script from the root of the DPLP-German project directory:
 #    bash train_custom_model.sh
 
+# --- Argument Validation ---
+if [ -z "$1" ]; then
+  echo "Usage: $0 <corpus_base_path>"
+  echo "Example: $0 data/pcc"
+  exit 1
+fi
+
 # --- Configuration ---
-# Change this to the relative path of the data directory from the project root.
-BASE_DIR="data/pcc"
-REL_MAP_FILE="${BASE_DIR}/pcc_rel_mapping.json"
+# The main directory for the corpus, passed as a command-line argument.
+BASE_DIR="$1"
+# Derive the corpus name and relation map file from the base directory path.
+CORPUS_NAME=$(basename "$BASE_DIR")
+REL_MAP_FILE="${BASE_DIR}/${CORPUS_NAME}_rel_mapping.json"
 
 # --- Script ---
 
 # Check if the base directory exists
 if [ ! -d "$BASE_DIR" ]; then
   echo "Error: Base directory '$BASE_DIR' not found."
-  echo "Please create it and organize your data in 'training', 'dev', and 'test' subdirectories."
+  echo "Please ensure it contains 'training', 'dev', and 'test' subdirectories."
   exit 1
 fi
 
-echo "--- Step 1: Generating custom relation map ---"
+echo "--- Step 1: Generating custom relation map for corpus: $CORPUS_NAME ---"
 python3 scripts/generate_relation_map.py "${BASE_DIR}/training" "${REL_MAP_FILE}"
 if [ $? -ne 0 ]; then
     echo "Error: Failed to generate relation map. Aborting."
     exit 1
 fi
 
-echo "--- Step 2: Starting training process ---"
-echo "Using base directory: $BASE_DIR"
-echo "Using relation map: $REL_MAP_FILE"
-
-# Run the training command inside the Docker container
+echo "--- Step 2: Running Stage 1 Preprocessing (in Docker) ---"
+# This stage generates the .txt files from the source .rs3 files.
 docker run --rm -it \
   -v "$(pwd)":/home/DPLP \
   -w /home/DPLP \
   mohamadisara20/dplp-env:ger \
-  python3 ger_train.py "$BASE_DIR" -rm "$REL_MAP_FILE"
+  python3 ger_train.py "$BASE_DIR" --run-stage1
+
+echo "--- Step 3: Running Host-side GPU Preprocessing ---"
+# This stage uses the host's GPU for Stanza and also runs the BerkeleyParser.
+for CORPUS_PART in training dev test;
+do
+    echo "--- Processing ./${BASE_DIR}/${CORPUS_PART} on host ---"
+    python3 run_stanza_preprocessing.py "${BASE_DIR}/${CORPUS_PART}"
+    python3 ger_4_txt2parse.py "${BASE_DIR}/${CORPUS_PART}"
+done
+
+echo "--- Step 4: Running Stage 2 Final Training (in Docker) ---"
+# This stage takes the preprocessed files and runs the final training steps.
+docker run --rm -it \
+  -v "$(pwd)":/home/DPLP \
+  -w /home/DPLP \
+  mohamadisara20/dplp-env:ger \
+  python3 ger_train.py "$BASE_DIR" -rm "${REL_MAP_FILE}" --run-stage2
+
 
 echo "Training finished."
 echo "Your new model is located in: $BASE_DIR/model/"
